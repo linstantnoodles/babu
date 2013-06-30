@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Recording using Web Audio API</title>
+    <script src="js/recorder.js"></script>
+    <script src="main.js"></script>
+    <style>
+        ul { 
+            list-style-type: none;
+            float: left;
+        }
+
+        li {
+            margin: 10px;
+        }
+
+        a {
+            display: block;
+            width: 100px;
+            padding: 5px;
+            border: 1px solid #000;
+            text-decoration: none;
+          }
+    </style>
+</head>
+<body>
+    <ul>
+        <li><a href="#" onclick="startRecording();">Start Recording</a></li>
+        <li><a href="#" onclick="stopRecording();">Stop Recording</a></li>
+    </ul>
+    <ul>
+        <li><a href="#" onclick="playAudio();">Play Audio</a></li>
+        <li><a href="#" onclick="stopAudio();">Stop Audio</a></li>
+    </ul>
+    <ul>
+        <li><a href="#" onclick="upload();">Upload</a></li>
+        <li><a href="#" onclick="download();">Download</a></li>
+    </ul>
+</body>
+</html>
