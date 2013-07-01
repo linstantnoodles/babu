@@ -2,8 +2,8 @@
 <html>
 <head>
     <title>Audio Recording using Web Audio API</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
     <script src="js/recorder.js"></script>
-    <script src="main.js"></script>
     <style>
         ul { 
             list-style-type: none;
@@ -25,16 +25,44 @@
 </head>
 <body>
     <ul>
-        <li><a href="#" onclick="startRecording();">Start Recording</a></li>
-        <li><a href="#" onclick="stopRecording();">Stop Recording</a></li>
+        <li><a id="start" href="#">Start Recording</a></li>
+        <li><a id="stop" href="#">Stop Recording</a></li>
     </ul>
     <ul>
-        <li><a href="#" onclick="playAudio();">Play Audio</a></li>
-        <li><a href="#" onclick="stopAudio();">Stop Audio</a></li>
+        <li><a id="play" href="#">Play Audio</a></li>
+        <li><a id="end">Stop Audio</a></li>
     </ul>
     <ul>
-        <li><a href="#" onclick="upload();">Upload</a></li>
-        <li><a href="#" onclick="download();">Download</a></li>
+        <li><a id="upload" href="#">Upload</a></li>
+        <li><a id="download" href="#">Download</a></li>
     </ul>
 </body>
+<script type="text/javascript">
+var haha = new Babu();
+haha.initAudio();
+
+$("#start").click(function() {
+  haha.startRecording();
+});
+
+$("#stop").click(function() {
+  haha.stopRecording();
+});
+
+$("#play").click(function() {
+  haha.playAudio();
+});
+
+$("#end").click(function() {
+  haha.stopAudio();
+});
+
+$("#upload").click(function() {
+  haha.upload();
+});
+
+$("#download").click(function() {
+  haha.download();
+});
+</script>
 </html>
