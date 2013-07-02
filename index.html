@@ -25,44 +25,43 @@
 </head>
 <body>
     <ul>
-        <li><a id="start" href="#">Start Recording</a></li>
-        <li><a id="stop" href="#">Stop Recording</a></li>
+        <li><a id="start-record" href="#">Start Recording</a></li>
+        <li><a id="stop-record" href="#">Stop Recording</a></li>
     </ul>
     <ul>
-        <li><a id="play" href="#">Play Audio</a></li>
-        <li><a id="end">Stop Audio</a></li>
+        <li><a id="play-audio" href="#">Play Audio</a></li>
+        <li><a id="stop-audio" href="#">Stop Audio</a></li>
     </ul>
     <ul>
-        <li><a id="upload" href="#">Upload</a></li>
-        <li><a id="download" href="#">Download</a></li>
+        <li><a id="upload-audio" href="#">Upload</a></li>
+        <li><a id="download-audio" href="#">Download</a></li>
     </ul>
 </body>
 <script type="text/javascript">
-var haha = new Babu();
-haha.initAudio();
+    var babu = new Babu();
+    babu.init();
+    $("#start-record").click(function() {
+      babu.startRecording();
+    });
 
-$("#start").click(function() {
-  haha.startRecording();
-});
+    $("#stop-record").click(function() {
+      babu.stopRecording();
+    });
 
-$("#stop").click(function() {
-  haha.stopRecording();
-});
+    $("#play-audio").click(function() {
+      babu.playAudio();
+    });
 
-$("#play").click(function() {
-  haha.playAudio();
-});
+    $("#stop-audio").click(function() {
+      babu.stopAudio();
+    });
 
-$("#end").click(function() {
-  haha.stopAudio();
-});
+    $("#upload-audio").click(function() {
+      babu.upload();
+    });
 
-$("#upload").click(function() {
-  haha.upload();
-});
-
-$("#download").click(function() {
-  haha.download();
-});
+    $("#download-audio").click(function() {
+      babu.download();
+    });
 </script>
 </html>

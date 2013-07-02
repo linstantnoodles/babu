@@ -146,7 +146,7 @@
       this.node.connect(audioContext.destination);
     }
 
-    this.initAudio = function() {
+    this.init = function() {
       if (!navigator.webkitGetUserMedia)
         return (alert("Error: getUserMedia not supported!"));
       navigator.webkitGetUserMedia({
