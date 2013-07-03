@@ -3,21 +3,19 @@
   'use strict';
 
   var Babu = function() {
-
-    var WORKER_PATH = 'js/recorderWorker.js',
-      audioContext = new webkitAudioContext(),
-      audioInput = null,
-      realAudioInput = null,
-      inputPoint = null,
-      audioRecorder = null,
-      bufferSrc = null,
-      rafID = null,
-      recIndex = 0,
-      bufferLen = 4096,
-      recording = false,
-      worker = new Worker(WORKER_PATH),
-      self = this,
-      currCallback = null;
+    // in here we hae a worker
+    // we have audio context settings
+    // set event handler for audio processing
+    var WORKER_PATH = 'js/recorderWorker.js';
+    var audioContext = new webkitAudioContext();
+    var audioInput = null;
+    var inputPoint = null;
+    var bufferSource = null;
+    var bufferLen = 4096;
+    var recording = false;
+    var worker = new Worker(WORKER_PATH);
+    var currCallback = null;
+    var recIndex = 0;
 
     this.play = function(cb) {
       currCallback = cb || config.callback;
@@ -67,7 +65,7 @@
 
     this.stopAudio = function() {
       console.log('Stopping');
-      bufferSrc.stop(0);
+      bufferSource.stop(0);
     }
 
     // Callback function for exportWAV
@@ -84,13 +82,13 @@
     }
 
     this.setBuffers = function(buffers) {
-      bufferSrc = audioContext.createBufferSource();
-      bufferSrc.buffer = audioContext.createBuffer(1, buffers[0].length, 44100);
-      bufferSrc.buffer.getChannelData(0).set(buffers[0]);
-      bufferSrc.buffer.getChannelData(0).set(buffers[1]);
+      bufferSource = audioContext.createBufferSource();
+      bufferSource.buffer = audioContext.createBuffer(1, buffers[0].length, 44100);
+      bufferSource.buffer.getChannelData(0).set(buffers[0]);
+      bufferSource.buffer.getChannelData(0).set(buffers[1]);
       // Pipe buffer data into audio destination (speakers)
-      bufferSrc.connect(audioContext.destination);
-      bufferSrc.start(0);
+      bufferSource.connect(audioContext.destination);
+      bufferSource.start(0);
     }
 
     this.startRecording = function() {
@@ -111,12 +109,8 @@
       inputPoint = audioContext.createGainNode();
       // Create node representing souce of audio (mic)
       audioInput = audioContext.createMediaStreamSource(stream);
-      // Create buffer source for playback
-      bufferSrc = audioContext.createBufferSource();
       // Pipe audio stream output into first gain
       audioInput.connect(inputPoint);
-      // Pipe buffer data into audio destination (speakers)
-      bufferSrc.connect(audioContext.destination);
       // Creating script processor node
       this.node = audioContext.createJavaScriptNode(bufferLen, 2, 2);
       // Create a web worker that contains implementation of buffer manipulation and WAV encoding
@@ -127,6 +121,7 @@
           uploadUrl: 'http://localhost/babu/test.php',
         }
       });
+
       // Listen for record event
       this.node.onaudioprocess = function(e) {
         if (!recording) return;
