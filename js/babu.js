@@ -3,19 +3,20 @@
   'use strict';
 
   var Babu = function() {
-    // in here we hae a worker
-    // we have audio context settings
-    // set event handler for audio processing
+
+    var _this = this;
+
     var WORKER_PATH = 'js/recorderWorker.js';
-    var audioContext = new webkitAudioContext();
+    var worker = null;
+    // Audio nodes and settings
+    var audioContext = null;
     var audioInput = null;
     var inputPoint = null;
     var bufferSource = null;
     var bufferLen = 4096;
     var recording = false;
-    var worker = new Worker(WORKER_PATH);
-    var currCallback = null;
     var recIndex = 0;
+    var currCallback = null;
 
     this.play = function(cb) {
       currCallback = cb || config.callback;
@@ -32,11 +33,27 @@
       });
     }
 
+    this.startWorker = function() {
+      worker = new Worker(WORKER_PATH);
+      worker.onmessage = function(e) {
+        var blob = e.data;
+        currCallback(blob);
+      }
+      worker.postMessage({
+        command: 'init',
+          config: {
+            sampleRate: audioContext.sampleRate,
+            uploadUrl: 'http://localhost/babu/test.php',
+          }
+      });
+    }
+
     this.exportWAV = function(cb, type, action) {
       console.log("exporting WAV");
       currCallback = cb;
       type = type || 'audio/wav';
-      if (!currCallback) throw new Error('Callback not set');
+      if (!currCallback)
+          throw new Error('Callback not set');
       worker.postMessage({
         command: 'exportWAV',
         type: type,
@@ -44,23 +61,18 @@
       });
     }
 
-    worker.onmessage = function(e) {
-      var blob = e.data;
-      currCallback(blob);
-    }
-
     this.upload = function() {
       console.log('Uploading');
-      this.exportWAV(this.doneEncoding, null, 'upload');
+      _this.exportWAV(_this.doneEncoding, null, 'upload');
     }
 
     this.download = function() {
-      this.exportWAV(this.doneEncoding, null, 'download');
+      _this.exportWAV(_this.doneEncoding, null, 'download');
     }
 
     this.playAudio = function() {
       console.log('Playing');
-      this.play(this.setBuffers);
+      _this.play(_this.setBuffers);
     }
 
     this.stopAudio = function() {
@@ -104,27 +116,12 @@
       recording = false;
     }
 
-    this.gotStream = function(stream) {
-      // Create first connecting node
-      inputPoint = audioContext.createGainNode();
-      // Create node representing souce of audio (mic)
-      audioInput = audioContext.createMediaStreamSource(stream);
-      // Pipe audio stream output into first gain
-      audioInput.connect(inputPoint);
+    this.startAudioListener = function() {
       // Creating script processor node
-      this.node = audioContext.createJavaScriptNode(bufferLen, 2, 2);
-      // Create a web worker that contains implementation of buffer manipulation and WAV encoding
-      worker.postMessage({
-        command: 'init',
-        config: {
-          sampleRate: audioContext.sampleRate,
-          uploadUrl: 'http://localhost/babu/test.php',
-        }
-      });
-
-      // Listen for record event
-      this.node.onaudioprocess = function(e) {
-        if (!recording) return;
+      _this.node = audioContext.createJavaScriptNode(bufferLen, 2, 2);
+      _this.node.onaudioprocess = function(e) {
+        if (!recording) 
+          return;
         console.log("recording");
         worker.postMessage({
           command: 'record',
@@ -134,19 +131,33 @@
           ]
         });
       };
-
       // Pipe the first gain node to recorder
-      inputPoint.connect(this.node);
+      inputPoint.connect(_this.node);
       // Pipe recorder output to audio destination
-      this.node.connect(audioContext.destination);
+      _this.node.connect(audioContext.destination);
+    }
+
+    this.connectStream = function(stream) {
+      // Set up audio context
+      audioContext = new webkitAudioContext();
+      // Create first connecting node
+      inputPoint = audioContext.createGainNode();
+      // Create node representing souce of audio (mic)
+      audioInput = audioContext.createMediaStreamSource(stream);
+      // Pipe audio stream output into first gain
+      audioInput.connect(inputPoint);
+      // Create a web worker that contains implementation of buffer manipulation and WAV encoding
+      _this.startWorker();
+      _this.startAudioListener();
     }
 
     this.init = function() {
       if (!navigator.webkitGetUserMedia)
         return (alert("Error: getUserMedia not supported!"));
+
       navigator.webkitGetUserMedia({
         audio: true
-      }, this.gotStream, function(e) {
+      }, _this.connectStream, function(e) {
         alert('Error getting audio');
         console.log(e);
       });
