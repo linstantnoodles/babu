@@ -25,12 +25,33 @@
       });
     }
 
-    this.getBuffers = function(cb) {
-      currCallback = cb || config.callback;
-      // Worker gets buffer data and post message back to parent
-      worker.postMessage({
-        command: 'getBuffers'
-      });
+    this.upload = function() {
+      console.log('Uploading');
+      _this.exportWAV(_this.doneEncoding, null, 'upload');
+    }
+
+    this.download = function() {
+      _this.exportWAV(_this.doneEncoding, null, 'download');
+    }
+
+    this.playAudio = function() {
+      console.log('Playing');
+      _this.play(_this.setBuffers);
+    }
+
+    this.stopAudio = function() {
+      console.log('Stopping');
+      bufferSource.stop(0);
+    }
+
+    this.setBuffers = function(buffers) {
+      bufferSource = audioContext.createBufferSource();
+      bufferSource.buffer = audioContext.createBuffer(1, buffers[0].length, 44100);
+      bufferSource.buffer.getChannelData(0).set(buffers[0]);
+      bufferSource.buffer.getChannelData(0).set(buffers[1]);
+      // Pipe buffer data into audio destination (speakers)
+      bufferSource.connect(audioContext.destination);
+      bufferSource.start(0);
     }
 
     this.startWorker = function() {
@@ -61,25 +82,6 @@
       });
     }
 
-    this.upload = function() {
-      console.log('Uploading');
-      _this.exportWAV(_this.doneEncoding, null, 'upload');
-    }
-
-    this.download = function() {
-      _this.exportWAV(_this.doneEncoding, null, 'download');
-    }
-
-    this.playAudio = function() {
-      console.log('Playing');
-      _this.play(_this.setBuffers);
-    }
-
-    this.stopAudio = function() {
-      console.log('Stopping');
-      bufferSource.stop(0);
-    }
-
     // Callback function for exportWAV
     this.doneEncoding = function(blob) {
       var filename = "myRecording" + ((recIndex < 10) ? "0" : "") + recIndex + ".wav";
@@ -91,16 +93,6 @@
       click.initEvent("click", true, true);
       link.dispatchEvent(click);
       recIndex++;
-    }
-
-    this.setBuffers = function(buffers) {
-      bufferSource = audioContext.createBufferSource();
-      bufferSource.buffer = audioContext.createBuffer(1, buffers[0].length, 44100);
-      bufferSource.buffer.getChannelData(0).set(buffers[0]);
-      bufferSource.buffer.getChannelData(0).set(buffers[1]);
-      // Pipe buffer data into audio destination (speakers)
-      bufferSource.connect(audioContext.destination);
-      bufferSource.start(0);
     }
 
     this.startRecording = function() {
