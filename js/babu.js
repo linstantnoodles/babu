@@ -1,4 +1,4 @@
-(function(window) {
+(function(window, undefined) {
 
   'use strict';
 
@@ -7,6 +7,7 @@
     var _this = this;
 
     var WORKER_PATH = 'js/recorderWorker.js';
+    var UPLOAD_URL = 'http://localhost/babu/test.php';
     var worker = null;
     // Audio nodes and settings
     var audioContext = null;
@@ -18,32 +19,11 @@
     var recIndex = 0;
     var currCallback = null;
 
-    this.play = function(cb) {
-      currCallback = cb || config.callback;
-      worker.postMessage({
-        command: 'getBuffers'
-      });
-    }
-
-    this.upload = function() {
-      console.log('Uploading');
-      _this.exportWAV(_this.doneEncoding, null, 'upload');
-    }
-
-    this.download = function() {
-      _this.exportWAV(_this.doneEncoding, null, 'download');
-    }
-
-    this.playAudio = function() {
-      console.log('Playing');
-      _this.play(_this.setBuffers);
-    }
-
-    this.stopAudio = function() {
-      console.log('Stopping');
-      bufferSource.stop(0);
-    }
-
+    /**
+     * Callback for playing recorded audio
+     * Sets the audio buffer for playback
+     * @param {Array} an array of buffer data
+     */
     this.setBuffers = function(buffers) {
       bufferSource = audioContext.createBufferSource();
       bufferSource.buffer = audioContext.createBuffer(1, buffers[0].length, 44100);
@@ -54,19 +34,39 @@
       bufferSource.start(0);
     }
 
-    this.startWorker = function() {
-      worker = new Worker(WORKER_PATH);
-      worker.onmessage = function(e) {
-        var blob = e.data;
-        currCallback(blob);
-      }
+    // Get the buffer data
+    this.getBuffers = function(cb) {
+      currCallback = cb || config.callback;
       worker.postMessage({
-        command: 'init',
-          config: {
-            sampleRate: audioContext.sampleRate,
-            uploadUrl: 'http://localhost/babu/test.php',
-          }
+        command: 'getBuffers'
       });
+    }
+
+    this.playAudio = function() {
+      console.log('Playing');
+      _this.getBuffers(_this.setBuffers);
+    }
+
+    this.stopAudio = function() {
+      console.log('Stopping');
+      bufferSource.stop(0);
+    }
+
+    /**
+     * Callback function for exportWAV
+     * @param {blob} blob object of audio data
+     * Downloads the audio recording as WAV file
+     */
+    this.doneEncoding = function(blob) {
+      var filename = "myRecording" + ((recIndex < 10) ? "0" : "") + recIndex + ".wav";
+      var url = (window.URL || window.webkitURL).createObjectURL(blob);
+      var link = window.document.createElement('a');
+      link.href = url;
+      link.download = filename || 'output.wav';
+      var click = document.createEvent("Event");
+      click.initEvent("click", true, true);
+      link.dispatchEvent(click);
+      recIndex++;
     }
 
     this.exportWAV = function(cb, type, action) {
@@ -82,21 +82,18 @@
       });
     }
 
-    // Callback function for exportWAV
-    this.doneEncoding = function(blob) {
-      var filename = "myRecording" + ((recIndex < 10) ? "0" : "") + recIndex + ".wav";
-      var url = (window.URL || window.webkitURL).createObjectURL(blob);
-      var link = window.document.createElement('a');
-      link.href = url;
-      link.download = filename || 'output.wav';
-      var click = document.createEvent("Event");
-      click.initEvent("click", true, true);
-      link.dispatchEvent(click);
-      recIndex++;
+    this.upload = function() {
+      console.log('Uploading');
+      _this.exportWAV(_this.doneEncoding, null, 'upload');
+    }
+
+    this.download = function() {
+      _this.exportWAV(_this.doneEncoding, null, 'download');
     }
 
     this.startRecording = function() {
       console.log('Start Record');
+      // Clear the buffers
       worker.postMessage({
         command: 'clear'
       });
@@ -108,6 +105,27 @@
       recording = false;
     }
 
+    /**
+     * Initializes the web worker
+     */
+    this.startWorker = function() {
+      worker = new Worker(WORKER_PATH);
+      worker.onmessage = function(e) {
+        var blob = e.data;
+        currCallback(blob);
+      }
+      worker.postMessage({
+        command: 'init',
+          config: {
+            sampleRate: audioContext.sampleRate,
+            uploadUrl: UPLOAD_URL
+          }
+      });
+    }
+
+    /**
+     * Listens for audio processing events
+     */
     this.startAudioListener = function() {
       // Creating script processor node
       _this.node = audioContext.createJavaScriptNode(bufferLen, 2, 2);
@@ -129,6 +147,10 @@
       _this.node.connect(audioContext.destination);
     }
 
+    /**
+     * Sets up the web audio API for input and output
+     * @param {stream} accepts a stream to audio source
+     */
     this.connectStream = function(stream) {
       // Set up audio context
       audioContext = new webkitAudioContext();
@@ -143,6 +165,9 @@
       _this.startAudioListener();
     }
 
+    /**
+     * Gain access to media device
+     */
     this.init = function() {
       if (!navigator.webkitGetUserMedia)
         return (alert("Error: getUserMedia not supported!"));
@@ -154,7 +179,8 @@
         console.log(e);
       });
     }
-
   }
+
   window.Babu = Babu;
+
 })(window);
