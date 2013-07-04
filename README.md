@@ -1,5 +1,5 @@
 #Babu
-A dead simple HTML5 Audio Recording Library.
+A dead simple HTML5 Audio Recording Library using [Web Audio API](http://www.html5rocks.com/en/tutorials/webaudio/intro/)
 
 ####Initialize
 
