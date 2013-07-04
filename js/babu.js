@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var Babu = function() {
+  var Babu = function(config) {
 
     var _this = this;
 
@@ -84,6 +84,7 @@
 
     this.upload = function() {
       console.log('Uploading');
+      console.log(_this.uploadUrl);
       _this.exportWAV(_this.doneEncoding, null, 'upload');
     }
 
@@ -171,6 +172,11 @@
     this.init = function() {
       if (!navigator.webkitGetUserMedia)
         return (alert("Error: getUserMedia not supported!"));
+      // Set user config
+      if (config) {
+        WORKER_PATH = config.workerPath || WORKER_PATH;
+        UPLOAD_URL = config.uploadUrl || UPLOAD_URL;
+      }
 
       navigator.webkitGetUserMedia({
         audio: true
@@ -179,6 +185,7 @@
         console.log(e);
       });
     }
+    this.init();
   }
 
   window.Babu = Babu;

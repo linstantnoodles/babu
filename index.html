@@ -38,8 +38,12 @@
     </ul>
 </body>
 <script type="text/javascript">
-    var babu = new Babu();
-    babu.init();
+
+    var config = {
+      workerPath: 'js/babuWorker.js',
+      uploadUrl: 'http://localhost/babu/test.php',
+    }
+    var babu = new Babu(config);
     $("#start-record").click(function() {
       babu.startRecording();
     });
