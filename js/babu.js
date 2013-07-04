@@ -6,7 +6,7 @@
 
     var _this = this;
 
-    var WORKER_PATH = 'js/recorderWorker.js';
+    var WORKER_PATH = 'js/babuWorker.js';
     var UPLOAD_URL = 'http://localhost/babu/test.php';
     var worker = null;
     // Audio nodes and settings
